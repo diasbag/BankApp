@@ -2,6 +2,8 @@ package com.example.demo;
 
 import com.example.demo.account.Account;
 import lombok.AllArgsConstructor;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -18,14 +20,20 @@ public class AccountService {
     public List<Account> getAccounts() {
         return accountRepository.getAccounts();
     }
-    public Account getAccountById(String id) {
-        return accountRepository.findByIdEquals(id);
+    public ResponseEntity<?> getAccountById(String id) {
+        Account account = accountRepository.findByIdEquals(id);
+        if (account == null) {
+            return new ResponseEntity<>("Account not Found", HttpStatus.NOT_FOUND);
+        }
+        return new ResponseEntity<>(account, HttpStatus.OK);
     }
 
-    public void deposit(String accountId, double amount) {
-        Account account = accountRepository.findAccountByIdAndClientID(accountId, "1");
-        double balance = account.getBalance() + amount;
-        accountRepository.updateAccount(accountId, balance);
+    public ResponseEntity<String> deleteById(String accountId) {
+        Account account = accountRepository.findById(accountId).orElse(null);
+        if (account == null) {
+            return new ResponseEntity<>("Account does not exist!!!", HttpStatus.NOT_FOUND);
+        }
+        accountRepository.deleteById(accountId);
+        return new ResponseEntity<>("Account " + accountId + " deleted", HttpStatus.OK );
     }
-
 }
